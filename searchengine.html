@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="Enter a search" required>
+        <select id="category-select">
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+            <option value="shopping">Shopping</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    
+    <table id="search-table">
+        <thead>
+            <tr>
+                <th>Search</th>
+            </tr>
+        </thead>
+        <tbody id="search-body"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchForm = document.getElementById('search-form');
+            const searchInput = document.getElementById('search-input');
+            const categorySelect = document.getElementById('category-select');
+            const searchBody = document.getElementById('search-body');
+
+            // Load searchs from localStorage
+            let searchs = JSON.parse(localStorage.getItem('searchs')) || [];
+            rendersearchs();
+
+            searchForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const search = {
+                    id: Date.now(),
+                    name: searchInput.value,
+                    category: categorySelect.value
+                };
+                searchs.push(search);
+                localStorage.setItem('searchs', JSON.stringify(searchs));
+                rendersearchs();
+                searchForm.reset();
+            });
+
+            function rendersearchs() {
+                searchBody.innerHTML = '';
+                searchs.forEach(search => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${search.name}</td>
+                        <td>${search.category}</td>
+                        <td>
+                            <button onclick="editsearch(${search.id})">Edit</button>
+                            <button onclick="deletesearch(${search.id})">Delete</button>
+                        </td>
+                    `;
+                    searchBody.appendChild(row);
+                });
+            }
+
+            window.editsearch = (id) => {
+                const search = searchs.find(t => t.id === id);
+                if (search) {
+                    searchInput.value = search.name;
+                    categorySelect.value = search.category;
+                    deletesearch(id);
+                }
+            };
+
+            window.deletesearch = (id) => {
+                searchs = searchs.filter(search => search.id !== id);
+                localStorage.setItem('searchs', JSON.stringify(searchs));
+                rendersearchs();
+            };
+        });
+    </script>
+</body>
+</html>
